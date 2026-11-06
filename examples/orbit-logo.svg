@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420">
+  <g fill="none" stroke-linecap="round">
+    <ellipse cx="210" cy="210" rx="150" ry="86" stroke="#3FBECF" stroke-width="24" transform="rotate(-22 210 210)"/>
+    <ellipse cx="210" cy="210" rx="92" ry="50" stroke="#62CAF5" stroke-width="14" transform="rotate(28 210 210)"/>
+    <circle cx="338" cy="132" r="18" fill="#3FBECF" stroke="none"/>
+    <circle cx="104" cy="292" r="12" fill="#3890D6" stroke="none"/>
+    <circle cx="210" cy="210" r="18" fill="#1D2632" stroke="none"/>
+  </g>
+  <text x="430" y="270" fill="#1D2632" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="156" font-weight="700" letter-spacing="4">ORBIT</text>
+  <text x="436" y="340" fill="#3FBECF" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="34" font-weight="600" letter-spacing="16">MOTION LAB</text>
+</svg>

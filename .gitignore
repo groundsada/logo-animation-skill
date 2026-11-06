@@ -1,0 +1,10 @@
+.DS_Store
+.venv/
+__pycache__/
+node_modules/
+*.log
+render_frames/
+verify/
+verify-*/
+*.mp4
+logos/

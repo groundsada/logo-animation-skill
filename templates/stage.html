@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logo Stage — single logo demo</title>
+<link rel="stylesheet" href="../assets/logo-animation.css">
+</head>
+<body>
+<div data-logo-app>
+  <div data-logo-stage-wrap>
+    <div data-logo-frame>
+      <svg data-logo-stage viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Logo animation demo">
+        <defs>
+          <clipPath id="orbit-word-clip" clipPathUnits="userSpaceOnUse">
+            <rect id="orbit-word-clip-rect" x="420" y="0" width="0" height="420"/>
+          </clipPath>
+        </defs>
+        <g data-logo-scene="orbit" data-logo-name="ORBIT" data-logo-duration="9">
+          <ellipse id="orbit-guide-ring" cx="960" cy="540" rx="560" ry="210" fill="none" stroke="#DCE3EA" stroke-width="1.4" opacity="0"/>
+          <g id="orbit-logo" data-logo-check transform="translate(400 344) scale(0.9333)">
+            <g fill="none" stroke-linecap="round">
+              <ellipse id="orbit-ring-a" cx="210" cy="210" rx="150" ry="86" stroke="#3FBECF" stroke-width="24" transform="rotate(-22 210 210)"/>
+              <ellipse id="orbit-ring-b" cx="210" cy="210" rx="92" ry="50" stroke="#62CAF5" stroke-width="14" transform="rotate(28 210 210)"/>
+              <circle id="orbit-dot-a" cx="338" cy="132" r="18" fill="#3FBECF" stroke="none" opacity="0"/>
+              <circle id="orbit-dot-b" cx="104" cy="292" r="12" fill="#3890D6" stroke="none" opacity="0"/>
+              <circle id="orbit-core" cx="210" cy="210" r="18" fill="#1D2632" stroke="none" opacity="0"/>
+            </g>
+            <g id="orbit-word-wrap" clip-path="url(#orbit-word-clip)">
+              <text x="430" y="270" fill="#1D2632" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="156" font-weight="700" letter-spacing="4">ORBIT</text>
+              <text x="436" y="340" fill="#3FBECF" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="34" font-weight="600" letter-spacing="16">MOTION LAB</text>
+            </g>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <div data-logo-ui>
+    <div data-logo-topline>
+      <div data-logo-chapters></div>
+      <div data-logo-time>00:00 / 00:09</div>
+    </div>
+    <div data-logo-track><div data-logo-progress></div></div>
+    <div data-logo-controls>
+      <button class="logo-btn" data-logo-action="play">PAUSE</button>
+      <button class="logo-btn" data-logo-action="playall">PLAY ALL</button>
+      <button class="logo-btn" data-logo-action="loop">LOOP ON</button>
+      <button class="logo-btn" data-logo-action="fullscreen">FULLSCREEN</button>
+      <button class="logo-btn" data-logo-action="clean">HIDE UI</button>
+      <div class="logo-variation-wrap">
+        <label data-logo-variation-label for="variation">VARIATION</label>
+        <select data-logo-variation id="variation"></select>
+      </div>
+      <div data-logo-hint><b>SPACE</b> play/pause &nbsp; <b>1–9</b> scenes &nbsp; <b>← →</b> seek &nbsp; <b>H</b> hide UI</div>
+    </div>
+  </div>
+</div>
+<script src="../assets/logo-animation.js"></script>
+<script>
+(function () {
+  var U = LogoStage.utils;
+  var ringA = document.getElementById("orbit-ring-a");
+  var ringB = document.getElementById("orbit-ring-b");
+  var guide = document.getElementById("orbit-guide-ring");
+  var wordClip = document.getElementById("orbit-word-clip-rect");
+  var logo = document.getElementById("orbit-logo");
+  var dots = [
+    document.getElementById("orbit-dot-a"),
+    document.getElementById("orbit-dot-b"),
+    document.getElementById("orbit-core")
+  ];
+  function ellipseLen(rx, ry) {
+    return Math.PI * (3 * (rx + ry) - Math.sqrt((3 * rx + ry) * (rx + 3 * ry)));
+  }
+  var lenA = ellipseLen(150, 86);
+  var lenB = ellipseLen(92, 50);
+  var lenG = ellipseLen(560, 210);
+
+  window.LOGO_SCENES = {
+    orbit: function (u) {
+      var fade = u < 0.5 ? 1 : 1 - U.smooth(U.phase(u, 0.62, 0.94));
+      U.setOp(logo, fade);
+
+      var guideOp = U.smooth(U.phase(u, 0.02, 0.07)) * (1 - U.smooth(U.phase(u, 0.30, 0.38)));
+      U.setOp(guide, guideOp);
+      U.setDash(guide, lenG, U.easeOut(U.phase(u, 0.02, 0.22)));
+
+      var drawA = u < 0.5 ? U.easeOut(U.phase(u, 0.04, 0.28)) : 1 - U.easeOut(U.phase(u, 0.70, 0.90));
+      var drawB = u < 0.5 ? U.easeOut(U.phase(u, 0.08, 0.32)) : 1 - U.easeOut(U.phase(u, 0.72, 0.92));
+      U.setDash(ringA, lenA, drawA);
+      U.setDash(ringB, lenB, drawB);
+
+      dots.forEach(function (dot, i) {
+        var p = U.easeOutBack(U.phase(u, 0.16 + i * 0.03, 0.28 + i * 0.03));
+        var cx = Number(dot.getAttribute("cx"));
+        var cy = Number(dot.getAttribute("cy"));
+        U.setTransform(dot, 0, 0, p, p, 0, cx, cy);
+        U.setOp(dot, p);
+      });
+
+      var wordP = u < 0.5 ? U.smooth(U.phase(u, 0.14, 0.36)) : 1 - U.smooth(U.phase(u, 0.70, 0.88));
+      wordClip.setAttribute("width", (780 * wordP).toFixed(2));
+    }
+  };
+
+  LogoStage.create(document.querySelector("[data-logo-app]"));
+})();
+</script>
+</body>
+</html>

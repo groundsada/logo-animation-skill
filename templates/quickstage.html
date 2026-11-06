@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logo Stage — quickstage</title>
+<link rel="stylesheet" href="../assets/logo-animation.css">
+</head>
+<body>
+<div data-logo-app>
+  <div data-logo-stage-wrap>
+    <div data-logo-frame>
+      <svg data-logo-stage viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Quick logo animation">
+        <g data-logo-scene="logo" data-logo-name="LOGO" data-logo-duration="9">
+          <g data-logo-art data-logo-check>
+            <image id="logo-image" href="../examples/orbit-logo.svg" x="0" y="0" width="100" height="100"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <div data-logo-ui>
+    <div data-logo-topline>
+      <div data-logo-chapters></div>
+      <div data-logo-time>00:00 / 00:09</div>
+    </div>
+    <div data-logo-track><div data-logo-progress></div></div>
+    <div data-logo-controls>
+      <button class="logo-btn" data-logo-action="play">PAUSE</button>
+      <button class="logo-btn" data-logo-action="playall">PLAY ALL</button>
+      <button class="logo-btn" data-logo-action="loop">LOOP ON</button>
+      <button class="logo-btn" data-logo-action="fullscreen">FULLSCREEN</button>
+      <button class="logo-btn" data-logo-action="clean">HIDE UI</button>
+      <div class="logo-variation-wrap">
+        <label data-logo-variation-label for="variation">VARIATION</label>
+        <select data-logo-variation id="variation"></select>
+      </div>
+      <div data-logo-hint><b>SPACE</b> play/pause &nbsp; <b>← →</b> seek &nbsp; <b>H</b> hide UI</div>
+    </div>
+  </div>
+</div>
+<script src="../assets/logo-animation.js"></script>
+<script>
+(function () {
+  var image = document.getElementById("logo-image");
+  var href = image.getAttribute("href");
+  var probe = new Image();
+  probe.onload = function () {
+    var w = probe.naturalWidth || probe.width || 1200;
+    var h = probe.naturalHeight || probe.height || 420;
+    var maxW = 1120;
+    var maxH = 420;
+    var s = Math.min(maxW / w, maxH / h);
+    var iw = w * s;
+    var ih = h * s;
+    image.setAttribute("x", ((1920 - iw) / 2).toFixed(2));
+    image.setAttribute("y", ((1080 - ih) / 2).toFixed(2));
+    image.setAttribute("width", iw.toFixed(2));
+    image.setAttribute("height", ih.toFixed(2));
+  };
+  probe.src = href;
+  LogoStage.create(document.querySelector("[data-logo-app]"));
+})();
+</script>
+</body>
+</html>
