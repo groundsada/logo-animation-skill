@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logo animation — standalone pages</title>
+<style>
+:root{--bg:#080B10;--panel:#0E141B;--line:#1D2632;--text:#E9EEF4;--muted:#7D8A99;--accent:#5EB2D7}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(125% 95% at 50% 0%,#111821 0%,#080B10 55%,#05070A 100%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:56px 24px 80px}
+h1{font-size:32px;letter-spacing:-.03em;margin:0 0 8px}
+p{color:var(--muted);max-width:760px;line-height:1.55;margin:0 0 30px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+a.card{display:block;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:22px;color:var(--text);text-decoration:none;transition:border-color .2s,transform .2s}
+a.card:hover{border-color:#2A3543;transform:translateY(-2px)}
+.card b{display:block;font-size:18px;letter-spacing:-.01em;margin-bottom:6px}
+.card span{display:block;color:var(--muted);font-size:12px;line-height:1.5}
+.tag{display:inline-block;margin-top:14px;font:600 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accent);letter-spacing:.12em}
+</style>
+</head>
+<body><div class="wrap">
+<h1>Logo animation — standalone pages</h1>
+<p>One logo per self-contained HTML. Each page includes its own CSS, JavaScript and inline SVG/animation. Use the variation selector for alternate motion; <code>#clean=1</code> hides the player chrome for capture.</p>
+<div class="grid">
+<a class="card" href="scinet.html"><b>SCinet</b><span>Network paths, nodes, convergence rings, vector logo.</span><span class="tag">SELF-CONTAINED HTML</span></a>
+<a class="card" href="sc26.html"><b>SC26</b><span>Grid, rising elements, stars, parallel flows, vector logo.</span><span class="tag">SELF-CONTAINED HTML</span></a>
+<a class="card" href="esnet.html"><b>ESnet</b><span>Official SVG trace, fills, wordmark and ten styles.</span><span class="tag">SELF-CONTAINED HTML</span></a>
+<a class="card" href="inmon.html"><b>InMon</b><span>Oval guides, red-ring trace, wordmark wipe, red-dot lock.</span><span class="tag">SELF-CONTAINED HTML</span></a>
+<a class="card" href="nrp.html"><b>NRP</b><span>Blue-letter trace, gray wordmark wipe, scan line, vector lock.</span><span class="tag">SELF-CONTAINED HTML</span></a>
+</div>
+</div></body></html>
