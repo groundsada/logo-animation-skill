@@ -40,6 +40,9 @@ body{
 .chapter[data-act="2"].active .dot{background:var(--blue);opacity:1}
 .chapter[data-act="3"].active .dot{background:#BF2027;opacity:1}
 .chapter[data-act="4"].active .dot{background:#3FBECF;opacity:1}
+.chapter[data-act="5"].active .dot{background:#F37421;opacity:1}
+.chapter[data-act="6"].active .dot{background:#DB3123;opacity:1}
+.chapter[data-act="7"].active .dot{background:#C69214;opacity:1}
 #time{font:500 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);letter-spacing:.08em;white-space:nowrap}
 #track{height:2px;background:#1A222D;border-radius:2px;cursor:pointer;position:relative;margin-bottom:18px}
 #progress{position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--orange) 50%,var(--blue));border-radius:2px}
@@ -159,6 +162,7 @@ const easeOut=t=>1-Math.pow(1-clamp(t),3);
 const easeInOut=t=>{t=clamp(t);return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2};
 const easeOutBack=t=>{t=clamp(t);const c=1.45;return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2)};
 const phase=(u,a,b)=>clamp((u-a)/(b-a));
+const ellipseLen=(rx,ry)=>Math.PI*(3*(rx+ry)-Math.sqrt((3*rx+ry)*(rx+3*ry)));
 const el=(tag,attrs={},parent)=>{const e=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);if(parent)parent.appendChild(e);return e};
 const setOp=(e,v)=>e.setAttribute("opacity",clamp(v).toFixed(4));
 const setFillOp=(e,v)=>e.setAttribute("fill-opacity",clamp(v).toFixed(4));
@@ -175,9 +179,12 @@ const VARIATION_NAMES={
   sc26:["ORIGINAL","APERTURE","KINETIC","SCANLINE"],
   esnet:ESNET_STYLE_NAMES,
   inmon:["ORIGINAL","APERTURE","KINETIC","SCANLINE"],
-  nrp:["ORIGINAL","APERTURE","KINETIC","SCANLINE"]
+  nrp:["ORIGINAL","APERTURE","KINETIC","SCANLINE"],
+  caltech:["ORIGINAL","APERTURE","KINETIC","SCANLINE"],
+  internet2:["ORIGINAL","APERTURE","KINETIC","SCANLINE"],
+  sdsc:["ORIGINAL","APERTURE","KINETIC","SCANLINE"]
 };
-const variationByAct={scinet:0,sc26:0,esnet:0,inmon:0,nrp:0};
+const variationByAct={scinet:0,sc26:0,esnet:0,inmon:0,nrp:0,caltech:0,internet2:0,sdsc:0};
 const variation={};
 let variationActIndex=-1;
 let esnetStyle=0;
@@ -893,6 +900,9 @@ function renderEsnetVariant(u,style){
 
 const inmon={};
 const nrp={};
+const caltech={};
+const internet2={};
+const sdsc={};
 function setupInMon(){
   inmon.official=document.getElementById("inmon-official");
   inmon.wordWrap=document.getElementById("inmon-word-wrap");
@@ -1144,6 +1154,206 @@ function applyActVariation(group,actId,u,vi){
   }
 }
 
+function setupCaltech(){
+  caltech.seal=document.getElementById("caltech-seal");
+  caltech.motion=document.getElementById("caltech-motion");
+  caltech.iris=document.getElementById("caltech-iris-circle");
+  caltech.guidesGroup=document.getElementById("caltech-guides");
+  caltech.pulsesGroup=document.getElementById("caltech-pulses");
+  caltech.guides=[];
+  for(const d of [{r:328,color:"#F37421"},{r:348,color:"#E96D1F"},{r:368,color:"#F6A15E"}]){
+    const e=el("circle",{cx:960,cy:540,r:d.r,fill:"none",stroke:d.color,"stroke-width":d.color==="#F6A15E"?0.8:1.3},caltech.guidesGroup);
+    const L=2*Math.PI*d.r;
+    e.style.strokeDasharray=String(L);
+    e.style.strokeDashoffset=String(L);
+    caltech.guides.push({el:e,L});
+  }
+  caltech.ticks=el("g",{},caltech.guidesGroup);
+  for(let i=0;i<24;i++){
+    const a=i*Math.PI/12;
+    el("line",{x1:960+Math.cos(a)*378,y1:540+Math.sin(a)*378,x2:960+Math.cos(a)*392,y2:540+Math.sin(a)*392,stroke:"#F37421","stroke-width":1,opacity:0.55},caltech.ticks);
+  }
+  caltech.pulses=[];
+  for(let i=0;i<2;i++){
+    const c=el("circle",{r:i?3.2:4,fill:i?"#F37421":"#ffffff",stroke:i?"#ffffff":"#F37421","stroke-width":1.4,opacity:0},caltech.pulsesGroup);
+    caltech.pulses.push({el:c,offset:i*0.5,speed:0.5+i*0.08});
+  }
+  caltech.rings=[];
+  for(let i=0;i<2;i++){
+    const c=el("circle",{cx:960,cy:540,r:0,fill:"none",stroke:i?"#E96D1F":"#F37421","stroke-width":1.2,opacity:0},caltech.pulsesGroup);
+    caltech.rings.push({el:c});
+  }
+}
+function renderCaltech(u){
+  const finalFade=u<0.5?1:1-smooth(phase(u,0.62,0.94));
+  setOp(caltech.seal,finalFade);
+  const entry=easeInOut(phase(u,0.02,0.30));
+  const rev=easeInOut(phase(u,0.62,0.90));
+  const irisP=u<0.5?entry:1-rev;
+  if(u>=0.46&&u<0.62){
+    caltech.seal.removeAttribute("clip-path");
+  }else{
+    caltech.seal.setAttribute("clip-path","url(#caltech-iris)");
+    caltech.iris.setAttribute("r",(340*irisP).toFixed(2));
+  }
+  if(u>=0.46&&u<0.62){
+    caltech.motion.removeAttribute("transform");
+  }else{
+    const p=easeOut(phase(u,0.02,0.34));
+    const s=lerp(0.88,1,p)*(1-0.06*rev);
+    const rot=lerp(-12,0,p)+6*rev;
+    setTransform(caltech.motion,0,0,s,s,rot,960,540);
+  }
+  const guideIn=smooth(phase(u,0.02,0.08));
+  const guideOut=1-smooth(phase(u,0.30,0.38));
+  const guideRev=smooth(phase(u,0.64,0.70))*(1-smooth(phase(u,0.88,0.94)));
+  setOp(caltech.guidesGroup,Math.max(guideIn*guideOut,guideRev));
+  const gd=u<0.5?easeOut(phase(u,0.03,0.24)):1-easeOut(phase(u,0.66,0.88));
+  for(const g of caltech.guides)setDash(g.el,g.L,gd);
+  setTransform(caltech.ticks,0,0,1,1,-u*18,960,540);
+  const pulseOp=Math.max(smooth(phase(u,0.04,0.10))*(1-smooth(phase(u,0.32,0.40))),smooth(phase(u,0.62,0.68))*(1-smooth(phase(u,0.88,0.96))));
+  setOp(caltech.pulsesGroup,pulseOp);
+  for(const p of caltech.pulses){
+    const t=(u*p.speed+p.offset)%1;
+    const a=t*Math.PI*2;
+    p.el.setAttribute("cx",(960+Math.cos(a)*382).toFixed(2));
+    p.el.setAttribute("cy",(540+Math.sin(a)*382).toFixed(2));
+    setOp(p.el,0.9*pulseOp);
+  }
+  const ringP=u<0.5?easeOut(phase(u,0.12,0.34)):1-easeOut(phase(u,0.68,0.88));
+  const ringOp=smooth(phase(u,0.12,0.18))*(1-smooth(phase(u,0.34,0.40)))+smooth(phase(u,0.64,0.70))*(1-smooth(phase(u,0.88,0.94)));
+  for(const r of caltech.rings){
+    r.el.setAttribute("r",(420*ringP).toFixed(2));
+    setOp(r.el,ringOp*0.35);
+  }
+  if(u>=0.46&&u<0.62){
+    caltech.seal.removeAttribute("clip-path");
+    caltech.motion.removeAttribute("transform");
+    setOp(caltech.seal,1);
+    setOp(caltech.guidesGroup,0);
+    setOp(caltech.pulsesGroup,0);
+  }
+}
+function setupInternet2(){
+  internet2.place=document.getElementById("internet2-place");
+  internet2.swoosh=document.getElementById("i2-swoosh");
+  internet2.ghost=document.getElementById("i2-swoosh-ghost");
+  internet2.pulse=document.getElementById("i2-pulse");
+  internet2.letters=[...document.querySelectorAll("#internet2-place .i2-letter")];
+  internet2.scan=document.getElementById("i2-scan");
+  internet2.guidesGroup=document.getElementById("i2-guides");
+  internet2.ringsGroup=document.getElementById("i2-rings");
+  internet2.swooshLen=internet2.ghost.getTotalLength();
+  internet2.letters.sort((a,b)=>a.getBBox().x-b.getBBox().x);
+  internet2.guides=[];
+  for(const d of [{rx:500,ry:320,color:"#DB3123"},{rx:530,ry:345,color:"#F6A15E"},{rx:560,ry:370,color:"#DCE3EA"}]){
+    const e=el("ellipse",{cx:960,cy:540,rx:d.rx,ry:d.ry,fill:"none",stroke:d.color,"stroke-width":d.color==="#DCE3EA"?0.8:1.2},internet2.guidesGroup);
+    const L=ellipseLen(d.rx,d.ry);
+    e.style.strokeDasharray=String(L);
+    e.style.strokeDashoffset=String(L);
+    internet2.guides.push({el:e,L});
+  }
+  internet2.rings=[];
+  for(let i=0;i<2;i++){
+    const c=el("circle",{cx:960,cy:540,r:0,fill:"none",stroke:i?"#F6A15E":"#DB3123","stroke-width":1.2,opacity:0},internet2.ringsGroup);
+    internet2.rings.push({el:c});
+  }
+}
+function renderInternet2(u){
+  const finalFade=u<0.5?1:1-smooth(phase(u,0.62,0.94));
+  setOp(internet2.place,finalFade);
+  const swooshP=u<0.5?smooth(phase(u,0.04,0.24)):1-smooth(phase(u,0.68,0.88));
+  setDash(internet2.ghost,internet2.swooshLen,swooshP);
+  setOp(internet2.ghost,u<0.5?(1-smooth(phase(u,0.22,0.32))):smooth(phase(u,0.62,0.68))*(1-smooth(phase(u,0.90,0.96))));
+  const fillP=u<0.5?smooth(phase(u,0.18,0.32)):1-smooth(phase(u,0.64,0.90));
+  setOp(internet2.swoosh,fillP);
+  for(let i=0;i<internet2.letters.length;i++){
+    const el=internet2.letters[i];
+    const p=u<0.5?smooth(phase(u,0.12+i*0.022,0.28+i*0.022)):1-smooth(phase(u,0.70+i*0.01,0.88+i*0.01));
+    setOp(el,p);
+    setTransform(el,0,20*(1-p),1,1,0,0,0);
+  }
+  const scanP=u<0.5?easeOut(phase(u,0.10,0.34)):1-easeOut(phase(u,0.70,0.90));
+  const sx=(1004.1067*scanP).toFixed(2);
+  internet2.scan.setAttribute("x1",sx);
+  internet2.scan.setAttribute("x2",sx);
+  const scanOp=smooth(phase(u,0.10,0.14))*(1-smooth(phase(u,0.34,0.40)));
+  setOp(internet2.scan,scanOp*0.9);
+  const pulseOp=Math.max(smooth(phase(u,0.08,0.14))*(1-smooth(phase(u,0.34,0.42))),smooth(phase(u,0.62,0.68))*(1-smooth(phase(u,0.90,0.96))));
+  const t=(u*0.7+0.1)%1;
+  const pt=internet2.ghost.getPointAtLength(t*internet2.swooshLen);
+  internet2.pulse.setAttribute("cx",pt.x.toFixed(2));
+  internet2.pulse.setAttribute("cy",pt.y.toFixed(2));
+  setOp(internet2.pulse,pulseOp*0.9);
+  const guideIn=smooth(phase(u,0.02,0.08));
+  const guideOut=1-smooth(phase(u,0.30,0.38));
+  const guideRev=smooth(phase(u,0.64,0.70))*(1-smooth(phase(u,0.88,0.94)));
+  setOp(internet2.guidesGroup,Math.max(guideIn*guideOut,guideRev));
+  const gd=u<0.5?easeOut(phase(u,0.03,0.24)):1-easeOut(phase(u,0.66,0.88));
+  for(const g of internet2.guides)setDash(g.el,g.L,gd);
+  const ringP=u<0.5?easeOut(phase(u,0.12,0.34)):1-easeOut(phase(u,0.68,0.88));
+  const ringOp=smooth(phase(u,0.12,0.18))*(1-smooth(phase(u,0.34,0.40)))+smooth(phase(u,0.64,0.70))*(1-smooth(phase(u,0.88,0.94)));
+  for(const r of internet2.rings){
+    r.el.setAttribute("r",(430*ringP).toFixed(2));
+    setOp(r.el,ringOp*0.35);
+  }
+  if(u>=0.46&&u<0.62){
+    setOp(internet2.place,1);
+    setOp(internet2.swoosh,1);
+    for(const el of internet2.letters){setOp(el,1);el.removeAttribute("transform");}
+    setOp(internet2.ghost,0);setOp(internet2.scan,0);setOp(internet2.pulse,0);
+    setOp(internet2.guidesGroup,0);setOp(internet2.ringsGroup,0);
+  }
+}
+function setupSDSC(){
+  sdsc.place=document.getElementById("sdsc-place");
+  sdsc.gold=[...document.querySelectorAll("#sdsc-svg .fil0")].sort((a,b)=>a.getBBox().x-b.getBBox().x);
+  sdsc.blue=[...document.querySelectorAll("#sdsc-svg .fil1")].sort((a,b)=>a.getBBox().x-b.getBBox().x);
+  sdsc.scan=document.getElementById("sdsc-scan");
+  sdsc.rule=document.getElementById("sdsc-rule");
+  sdsc.guidesGroup=document.getElementById("sdsc-guides");
+  sdsc.guides=[];
+  for(const y of [438.226,540,641.774]){
+    const e=el("line",{x1:380,y1:y,x2:380,y2:y,stroke:"#DCE3EA","stroke-width":0.9},sdsc.guidesGroup);
+    sdsc.guides.push({el:e,x:380,len:1160});
+  }
+}
+function renderSDSC(u){
+  const finalFade=u<0.5?1:1-smooth(phase(u,0.62,0.94));
+  setOp(sdsc.place,finalFade);
+  for(let i=0;i<sdsc.gold.length;i++){
+    const el=sdsc.gold[i];
+    const p=u<0.5?smooth(phase(u,0.06+i*0.018,0.22+i*0.018)):1-smooth(phase(u,0.68+i*0.01,0.88+i*0.01));
+    setOp(el,p);
+    setTransform(el,0,10*(1-p),1,1,0,0,0);
+  }
+  for(let i=0;i<sdsc.blue.length;i++){
+    const el=sdsc.blue[i];
+    const p=u<0.5?smooth(phase(u,0.14+i*0.012,0.30+i*0.012)):1-smooth(phase(u,0.70+i*0.008,0.90+i*0.008));
+    setOp(el,p);
+    setTransform(el,0,10*(1-p),1,1,0,0,0);
+  }
+  const scanP=u<0.5?easeOut(phase(u,0.08,0.36)):1-easeOut(phase(u,0.70,0.90));
+  const sx=(1611.98*scanP).toFixed(2);
+  sdsc.scan.setAttribute("x1",sx);
+  sdsc.scan.setAttribute("x2",sx);
+  const scanOp=smooth(phase(u,0.08,0.12))*(1-smooth(phase(u,0.36,0.42)));
+  setOp(sdsc.scan,scanOp*0.8);
+  const ruleP=u<0.5?easeOut(phase(u,0.10,0.34)):1-easeOut(phase(u,0.72,0.90));
+  sdsc.rule.setAttribute("x2",(1611.98*ruleP).toFixed(2));
+  setOp(sdsc.rule,smooth(phase(u,0.10,0.14))*(1-smooth(phase(u,0.34,0.40)))*0.9);
+  const guideOp=Math.max(smooth(phase(u,0.02,0.08))*(1-smooth(phase(u,0.30,0.38))),smooth(phase(u,0.64,0.70))*(1-smooth(phase(u,0.88,0.94))));
+  setOp(sdsc.guidesGroup,guideOp);
+  const gd=u<0.5?phase(u,0.03,0.22):1-phase(u,0.72,0.90);
+  for(const g of sdsc.guides)g.el.setAttribute("x2",(g.x+g.len*gd).toFixed(2));
+  if(u>=0.46&&u<0.62){
+    setOp(sdsc.place,1);
+    for(const el of sdsc.gold){setOp(el,1);el.removeAttribute("transform");}
+    for(const el of sdsc.blue){setOp(el,1);el.removeAttribute("transform");}
+    setOp(sdsc.scan,0);setOp(sdsc.rule,0);setOp(sdsc.guidesGroup,0);
+  }
+}
+
 const ACT_DUR=9;
 const TOTAL=9;
 const ACTS=[
@@ -1239,6 +1449,9 @@ document.addEventListener("keydown",e=>{
   else if(e.key==="3")seekAct(2);
   else if(e.key==="4")seekAct(3);
   else if(e.key==="5")seekAct(4);
+  else if(e.key==="6")seekAct(5);
+  else if(e.key==="7")seekAct(6);
+  else if(e.key==="8")seekAct(7);
   else if(e.key==="r"||e.key==="R")playAll();
   else if(e.key==="l"||e.key==="L")toggleLoop();
   else if(e.key==="f"||e.key==="F")toggleFullscreen();
